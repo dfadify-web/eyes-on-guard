@@ -1,0 +1,15 @@
+{
+  "id": "eyes-on-guard",
+  "name": "Eyes on Guard",
+  "icon": "shield",
+  "accent": "#f87171",
+  "entry": "server.js",
+  "port": 7783,
+  "autostart": false,
+  "repo": "https://github.com/dfadify-web/eyes-on-guard",
+  "install": "npx -y github:dfadify-web/eyes-on-guard",
+  "description": {
+    "en": "A live security watch over what Claude runs: destructive commands, curl | sh, force pushes, plain-text secrets, sensitive files and persistent config changes.",
+    "es": "Vigilancia de seguridad en vivo de lo que ejecuta Claude: comandos destructivos, curl | sh, force push, secretos en claro, archivos sensibles y cambios de configuración persistente."
+  }
+}

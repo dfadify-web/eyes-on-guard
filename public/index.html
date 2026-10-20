@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eyes on Guard</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='8' fill='%23f87171'/%3E%3Cpath d='M16 8 10 10.5v4.5c0 3.6 2.6 6.4 6 7 3.4-.6 6-3.4 6-7v-4.5z' fill='none' stroke='%23111' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kit.css">
+<style>
+  :root { --x: #f87171; --high: #f87171; --med: #fbbf24; --low: #60a5fa; }
+  .cols { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr); gap: 14px; align-items: start; }
+  @media (max-width: 1000px) { .cols { grid-template-columns: 1fr; } }
+  .shield { display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: center; }
+  .sh { width: 110px; height: 124px; position: relative; display: grid; place-items: center; }
+  .sh svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .sh b { position: relative; font: 700 34px var(--mono); }
+  .sh small { position: absolute; bottom: 26px; font-size: 10px; color: var(--faint); text-transform: uppercase; letter-spacing: .1em; }
+  .sev3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .sevk { padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card-2); cursor: pointer; transition: border-color .15s, transform .15s var(--ease); }
+  .sevk:hover { transform: translateY(-1px); }
+  .sevk.on { border-color: var(--c); box-shadow: 0 0 0 1px var(--c) inset; }
+  .sevk b { font: 700 26px var(--mono); color: var(--c); display: block; line-height: 1.1; }
+  .sevk span { font-size: 11.5px; color: var(--muted); }
+  .note { font-size: 12px; color: var(--faint); margin-top: 10px; }
+  .feed { display: grid; gap: 8px; }
+  .fd { border-radius: 13px; border: 1px solid var(--line); background: var(--card); overflow: hidden; animation: rise .4s var(--ease) both; border-left: 3px solid var(--c); }
+  .fd.new { animation: rise .4s var(--ease) both, glow 1.6s var(--ease); }
+  @keyframes glow { 0%, 40% { box-shadow: 0 0 0 1px var(--c), 0 0 30px -6px var(--c); } }
+  .fd-h { display: flex; align-items: center; gap: 8px; padding: 9px 12px; cursor: pointer; flex-wrap: wrap; }
+  .badge { font: 700 10px var(--mono); text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: 6px; color: #111; background: var(--c); }
+  .fd-h b { font-size: 13px; }
+  .fd-h .who { margin-left: auto; font: 10.5px var(--mono); color: var(--faint); }
+  .snip { margin: 0 12px 10px; padding: 7px 10px; border-radius: 8px; background: var(--code); border: 1px solid var(--line); font: 11.5px/1.55 var(--mono); white-space: pre-wrap; word-break: break-all; max-height: 78px; overflow: hidden; color: var(--muted); }
+  .fd.open .snip { max-height: none; }
+  .snip mark { background: color-mix(in srgb, var(--c) 30%, transparent); color: var(--text); border-radius: 3px; padding: 0 2px; }
+  .rules { display: grid; gap: 4px; }
+  .rl { display: grid; grid-template-columns: 8px 1fr auto auto; gap: 10px; align-items: center; padding: 7px 4px; font-size: 12.5px; border-bottom: 1px solid color-mix(in srgb, var(--line) 50%, transparent); }
+  .rl > i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+  .rl .n { font: 600 12px var(--mono); color: var(--muted); min-width: 24px; text-align: right; }
+  .rl.off { opacity: .45; }
+  .sess { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; padding: 8px 4px; border-bottom: 1px solid color-mix(in srgb, var(--line) 50%, transparent); font-size: 12.5px; }
+  .sess .dots { display: flex; gap: 4px; font: 11px var(--mono); }
+  .sess .dots span { color: var(--c); }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="tile" id="logo"></span><div><div class="brand-name">Eyes on Guard</div><div class="brand-sub">extension · Eyes on Claude</div></div></div>
+  <span class="pill" id="conn"></span>
+  <div class="grow"></div>
+  <span class="pill" id="scanned"></span>
+</header>
+<main><div class="wrap">
+  <div class="cols">
+    <div style="display:grid;gap:14px">
+      <section class="card shield">
+        <div class="sh"><svg viewBox="0 0 110 124"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" id="sg0"/><stop offset="1" id="sg1"/></linearGradient></defs><path d="M55 4 8 22v34c0 31 20 55 47 64 27-9 47-33 47-64V22z" fill="url(#sg)" opacity=".18" id="shFill"/><path d="M55 4 8 22v34c0 31 20 55 47 64 27-9 47-33 47-64V22z" fill="none" stroke-width="3" id="shStroke"/></svg><b id="score">—</b><small id="scoreLbl"></small></div>
+        <div><h3 id="hSum"></h3><div class="sev3" id="sev"></div><div class="note" id="note"></div></div>
+      </section>
+      <section class="card"><h3 id="hFeed"></h3><div class="feed" id="feed"></div></section>
+    </div>
+    <div style="display:grid;gap:14px">
+      <section class="card"><h3 id="hSess"></h3><div id="sessions"></div></section>
+      <section class="card"><h3 id="hRules"></h3><div class="rules" id="rules"></div></section>
+    </div>
+  </div>
+</div></main>
+<script src="kit.js"></script>
+<script>
+const { icon, esc, fmtTime, base, store, connect } = EOC;
+const T = EOC.T({
+  es: { sum: 'Lo que Claude ha hecho que conviene revisar', feed: 'Hallazgos', sess: 'Por sesión', rules: 'Reglas', high: 'alto', med: 'medio', low: 'bajo', scanned: (n) => `${n} acciones revisadas`, scoreLbl: 'riesgo',
+    note: 'Solo observa el stream real de Eyes on Claude: no bloquea ni cambia nada. Los secretos se muestran enmascarados.', empty: 'Nada que revisar. Todo tranquilo.', all: 'todo',
+    rmrf: 'Borrado recursivo forzado', windel: 'Borrado recursivo (Windows)', gitforce: 'git push --force', gitreset: 'Descarta cambios de git', pipe: 'Descarga y ejecuta (curl | sh)', admin: 'Permisos de administrador', chmod: 'chmod 777', disk: 'Operación de disco', db: 'Borra tablas o bases de datos', sys: 'Cambia configuración del sistema', kill: 'Mata procesos a la fuerza', publish: 'Publica fuera (npm/gh)', env: 'Vuelca variables de entorno', secret: 'Secreto o clave en claro', sensitive: 'Lee un archivo sensible', persist: 'Edita configuración persistente', outside: 'Escribe fuera del proyecto' },
+  en: { sum: 'What Claude did that is worth a look', feed: 'Findings', sess: 'By session', rules: 'Rules', high: 'high', med: 'medium', low: 'low', scanned: (n) => `${n} actions checked`, scoreLbl: 'risk',
+    note: 'It only watches the real Eyes on Claude stream: it never blocks or changes anything. Secrets are shown masked.', empty: 'Nothing to review. All quiet.', all: 'all',
+    rmrf: 'Forced recursive delete', windel: 'Recursive delete (Windows)', gitforce: 'git push --force', gitreset: 'Discards git changes', pipe: 'Download and execute (curl | sh)', admin: 'Admin privileges', chmod: 'chmod 777', disk: 'Disk operation', db: 'Drops tables or databases', sys: 'Changes system settings', kill: 'Force-kills processes', publish: 'Publishes outside (npm/gh)', env: 'Dumps environment variables', secret: 'Plain-text secret or key', sensitive: 'Reads a sensitive file', persist: 'Edits persistent config', outside: 'Writes outside the project' },
+});
+const SEV_W = { high: 10, med: 4, low: 1 };
+const SECRET = /(sk-ant-[A-Za-z0-9_-]{20,}|sk-(?:proj-)?[A-Za-z0-9_-]{24,}|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16}|xox[bpas]-[A-Za-z0-9-]{20,}|AIza[0-9A-Za-z_-]{35}|-----BEGIN [A-Z ]*PRIVATE KEY-----)/;
+// [id, severidad, ¿a qué aplica?, regex]
+const RULES = [
+  ['rmrf', 'high', 'shell', /\brm\s+(?:-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r|-r\s+-f|-f\s+-r|--recursive\s+--force)\b[^\n;&|]*/],
+  ['windel', 'high', 'shell', /\b(?:Remove-Item\b[^\n;|]*-Recurse[^\n;|]*|rd\s+\/s\b[^\n;&]*|rmdir\s+\/s\b[^\n;&]*|del\s+\/[sfq][^\n;&]*)/i],
+  ['gitforce', 'high', 'shell', /\bgit\s+push\b[^\n;&|]*(?:--force(?:-with-lease)?|\s-f\b)[^\n;&|]*/],
+  ['pipe', 'high', 'shell', /\b(?:curl|wget|iwr|irm|Invoke-WebRequest|Invoke-RestMethod)\b(?![^\n|]*\b(?:localhost|127\.0\.0\.1)\b)[^\n|]*\|\s*(?:sudo\s+)?(?:sh|bash|zsh|iex|Invoke-Expression|python3?|node)\b(?!\s+-[ec]\b)/i],
+  ['disk', 'high', 'shell', /\b(?:mkfs(?:\.\w+)?|dd\s+if=[^\n]*of=\/dev\/|format\s+[a-z]:|diskpart|Format-Volume|Clear-Disk)\b[^\n;&|]*/i],
+  ['db', 'high', 'any', /\b(?:DROP\s+(?:TABLE|DATABASE|SCHEMA)|TRUNCATE\s+TABLE)\b[^\n;]*/i],
+  ['secret', 'high', 'any', SECRET],
+  ['gitreset', 'med', 'shell', /\bgit\s+(?:reset\s+--hard|clean\s+-[a-zA-Z]*f[a-zA-Z]*|checkout\s+--\s+\.|restore\s+--source)[^\n;&|]*/],
+  ['admin', 'med', 'shell', /\b(?:sudo\s+\S+[^\n;&|]*|Start-Process\b[^\n;|]*-Verb\s+RunAs[^\n;|]*|runas\s+\/user[^\n;&]*)/i],
+  ['chmod', 'med', 'shell', /\bchmod\s+(?:-R\s+)?(?:777|a\+rwx)\b[^\n;&|]*/],
+  ['sys', 'med', 'shell', /\b(?:reg\s+(?:add|delete)\b|Set-ExecutionPolicy\b|netsh\s+advfirewall\b|bcdedit\b|Set-MpPreference\b|systemctl\s+(?:disable|stop)\b|launchctl\s+unload\b)[^\n;&|]*/i],
+  ['sensitive', 'med', 'path', /(?:^|[\\/\s"'])(?:\.env(?:\.[\w.-]+)?|id_rsa|id_ed25519|[\w-]+\.pem|credentials(?:\.json)?|\.npmrc|\.pypirc|\.netrc|\.git-credentials)(?=$|["'\s])|[\\/]\.(?:aws|ssh|gnupg)[\\/][^\s"']*/i],
+  ['persist', 'med', 'write', /(?:[\\/]\.claude[\\/]settings(?:\.local)?\.json|[\\/]\.(?:bashrc|zshrc|profile|bash_profile)|Microsoft\.PowerShell_profile\.ps1|[\\/]etc[\\/]hosts|drivers[\\/]etc[\\/]hosts|[\\/]\.gitconfig)$/i],
+  ['kill', 'low', 'shell', /\b(?:taskkill\s+\/f[^\n;&|]*|Stop-Process\b[^\n;|]*-Force[^\n;|]*|killall\s+\S+|pkill\s+(?:-9\s+)?\S+|kill\s+-9\s+\S+)/i],
+  ['publish', 'low', 'shell', /\b(?:(?:npm|pnpm|yarn)\s+publish\b|gh\s+(?:release\s+create|repo\s+create|pr\s+merge)\b|vercel\s+(?:--prod|deploy\s+--prod)\b|git\s+push\b)[^\n;&|]*/],
+  ['env', 'low', 'shell', /(?:^|[;&|]\s*)(?:printenv|env|Get-ChildItem\s+env:|gci\s+env:|set)\s*(?:$|[;&|])/im],
+  ['outside', 'low', 'outside', null],
+];
+const S = { findings: [], seen: 0, cwd: new Map(), titles: new Map(), filter: 'all', off: new Set(JSON.parse(store.get('eoc.guard.off', '[]'))), replaying: false };
+document.getElementById('logo').innerHTML = icon('shield');
+for (const [id, k] of [['hSum', 'sum'], ['hFeed', 'feed'], ['hSess', 'sess'], ['hRules', 'rules'], ['note', 'note'], ['scoreLbl', 'scoreLbl']]) document.getElementById(id).textContent = T(k);
+
+const mask = (s) => s.replace(new RegExp(SECRET.source, 'g'), (m) => m.slice(0, 6) + '•'.repeat(Math.min(18, m.length - 8)) + m.slice(-2));
+const tmpRe = /[\\/](?:Temp|tmp|\.claude)[\\/]|^\/tmp\//i;
+function check(ev) {
+  const i = ev.input || {}, out = [];
+  const shell = /^(Bash|PowerShell)$/.test(ev.name) ? String(i.command || '') : '';
+  const fp = String(i.file_path || i.notebook_path || i.path || '');
+  const writeTxt = /^(Write|Edit|MultiEdit)$/.test(ev.name) ? String(i.content ?? i.new_string ?? (i.edits || []).map((e) => e.new_string).join('\n')) : '';
+  for (const [id, sev, kind, re] of RULES) {
+    let src = '', m = null;
+    if (kind === 'shell' && shell) { src = shell; m = re.exec(shell); }
+    else if (kind === 'any') { for (const s of [shell, writeTxt, String(i.query || '')]) if (s && (m = re.exec(s))) { src = s; break; } }
+    else if (kind === 'path') { for (const s of [fp, shell]) if (s && (m = re.exec(s))) { src = s; break; } }
+    else if (kind === 'write' && writeTxt !== '' && fp) { m = re.exec(fp); src = fp; }
+    else if (kind === 'outside' && /^(Write|Edit|MultiEdit|NotebookEdit)$/.test(ev.name) && fp) {
+      const cwd = S.cwd.get(ev.session);
+      if (cwd && /^([a-z]:[\\/]|\/)/i.test(fp) && !fp.toLowerCase().replace(/\//g, '\\').startsWith(cwd.toLowerCase().replace(/\//g, '\\')) && !tmpRe.test(fp)) { m = { 0: fp, index: 0 }; src = fp; }
+    }
+    if (m) out.push({ id, sev, src, match: m[0], at: m.index });
+  }
+  return out;
+}
+function onEvent(ev, replay) {
+  if (ev.kind === 'lane' && ev.lane === 'main') { if (ev.cwd) S.cwd.set(ev.session, ev.cwd); if (ev.title) S.titles.set(ev.session, ev.title); }
+  if (ev.kind !== 'tool_use') return;
+  S.seen++;
+  const hits = check(ev);
+  for (const h of hits) S.findings.push({ ...h, ts: ev.ts, tool: ev.name, session: ev.session, lane: ev.lane, fresh: !replay });
+  if (!replay) render();
+  else if (S.seen % 50 === 0) document.getElementById('scanned').textContent = T('scanned', S.seen);
+}
+
+function render() {
+  const f = S.findings.filter((x) => !S.off.has(x.id));
+  const cnt = { high: 0, med: 0, low: 0 }; for (const x of f) cnt[x.sev]++;
+  const score = Math.min(100, Math.round(f.reduce((a, x) => a + SEV_W[x.sev], 0) / Math.max(1, S.seen) * 100));
+  const c = cnt.high ? 'var(--high)' : cnt.med ? 'var(--med)' : 'var(--ok)';
+  document.getElementById('score').textContent = score; document.getElementById('score').style.color = c;
+  document.getElementById('shStroke').setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue(cnt.high ? '--high' : cnt.med ? '--med' : '--ok').trim());
+  document.getElementById('sg0').setAttribute('stop-color', document.getElementById('shStroke').getAttribute('stroke')); document.getElementById('sg1').setAttribute('stop-color', 'transparent');
+  document.getElementById('scanned').textContent = T('scanned', S.seen);
+  document.getElementById('sev').innerHTML = ['high', 'med', 'low'].map((s) => `<div class="sevk ${S.filter === s ? 'on' : ''}" data-s="${s}" style="--c:var(--${s})"><b>${cnt[s]}</b><span>${T(s)}</span></div>`).join('');
+  document.querySelectorAll('.sevk').forEach((b) => (b.onclick = () => { S.filter = S.filter === b.dataset.s ? 'all' : b.dataset.s; render(); }));
+  const list = f.filter((x) => S.filter === 'all' || x.sev === S.filter).slice().reverse().slice(0, 150);
+  document.getElementById('feed').innerHTML = list.length ? list.map((x, k) => {
+    const src = mask(x.src), mm = mask(x.match), at = src.indexOf(mm);
+    const from = Math.max(0, at - 120), snip = (from ? '…' : '') + esc(src.slice(from, at)) + `<mark>${esc(mm)}</mark>` + esc(src.slice(at + mm.length, at + mm.length + 300));
+    return `<div class="fd ${x.fresh && Date.now() - x.ts < 4000 ? 'new' : ''}" style="--c:var(--${x.sev})"><div class="fd-h"><span class="badge">${T(x.sev)}</span><b>${T(x.id)}</b><span class="tag">${esc(x.tool)}</span><span class="who">${fmtTime(x.ts)} · ${esc(S.titles.get(x.session) || base(S.cwd.get(x.session)) || x.session.slice(0, 8))}${x.lane !== 'main' ? ' · agent' : ''}</span></div><div class="snip">${at >= 0 ? snip : esc(src.slice(0, 400))}</div></div>`;
+  }).join('') : `<div class="empty">${icon('check')} ${T('empty')}</div>`;
+  document.querySelectorAll('.fd').forEach((d) => (d.querySelector('.fd-h').onclick = () => d.classList.toggle('open')));
+  const bySess = new Map();
+  for (const x of f) { const s = bySess.get(x.session) || { high: 0, med: 0, low: 0, w: 0 }; s[x.sev]++; s.w += SEV_W[x.sev]; bySess.set(x.session, s); }
+  document.getElementById('sessions').innerHTML = [...bySess.entries()].sort((a, b) => b[1].w - a[1].w).slice(0, 10).map(([id, s]) => `<div class="sess"><span style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(S.titles.get(id) || base(S.cwd.get(id)) || id.slice(0, 8))}</span><span class="dots">${['high', 'med', 'low'].map((k) => s[k] ? `<span style="--c:var(--${k})">● ${s[k]}</span>` : '').join('')}</span></div>`).join('') || `<div class="empty">—</div>`;
+  const byRule = new Map(); for (const x of S.findings) byRule.set(x.id, (byRule.get(x.id) || 0) + 1);
+  document.getElementById('rules').innerHTML = RULES.map(([id, sev]) => `<div class="rl ${S.off.has(id) ? 'off' : ''}" style="--c:var(--${sev})"><i></i><span>${T(id)}</span><span class="n">${byRule.get(id) || 0}</span><label class="switch"><input type="checkbox" data-id="${id}" ${S.off.has(id) ? '' : 'checked'}><i></i></label></div>`).join('');
+  document.querySelectorAll('#rules input').forEach((x) => (x.onchange = () => { x.checked ? S.off.delete(x.dataset.id) : S.off.add(x.dataset.id); store.set('eoc.guard.off', JSON.stringify([...S.off])); render(); }));
+}
+
+connect({ onEvent, onReset: () => { S.findings = []; S.seen = 0; }, onReplayed: render, pill: document.getElementById('conn') });
+addEventListener('eoc:theme', render);
+render();
+</script>
+</body>
+</html>

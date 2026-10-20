@@ -1,0 +1,29 @@
+{
+  "name": "eyes-on-guard",
+  "version": "0.1.0",
+  "description": "Eyes on Claude extension: A live security watch over what Claude runs: destructive commands, curl | sh, force pushes, plain-text secrets, sensitive files and persistent config changes.",
+  "license": "MIT",
+  "author": "dfadify-web",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dfadify-web/eyes-on-guard.git"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "eyes-on-claude",
+    "extension"
+  ],
+  "bin": {
+    "eyes-on-guard": "install.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/smoke.js",
+    "install-ext": "node install.js",
+    "uninstall-ext": "node install.js --uninstall"
+  }
+}
